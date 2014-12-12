@@ -5,9 +5,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
-import com.sun.org.apache.bcel.internal.generic.RETURN;
 import com.wifi.server.model.LocationDetails;
 import com.wifi.server.model.WifiDetail;
 
@@ -99,6 +99,97 @@ public class DataBaseOption {
 		
 		return -1;
 	}
+	
+	
+	
+	
+	public List<LocationDetails> selectLocationDetails(Connection connection){
+		List<LocationDetails> list = new ArrayList<LocationDetails>();
+		LocationDetails ld = null;
+		String locationSql = "";
+		
+		if(null != connection){
+			
+			try {
+				Statement statement = connection.createStatement();
+				
+				locationSql = "select * from tb_location";
+				
+				ResultSet location = statement.executeQuery(locationSql);
+				
+				while(location.next()){
+					ld = new LocationDetails();
+					ld.setLocationId(location.getLong("locationId"));
+					ld.setX(location.getInt("x"));
+					ld.setY(location.getInt("y"));
+					ld.setFloor(location.getInt("floor"));
+					
+					ld.setWifiDetails(this.selectWifiDetails(connection, ld.getLocationId()));
+					
+					list.add(ld);
+				}	
+				
+				
+				return list;
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+			
+			
+		}
+		
+		
+		return null;
+		
+	}
+	
+	
+	public List<WifiDetail> selectWifiDetails(Connection connection,long locationId){
+		
+		List<WifiDetail> wifis = new ArrayList<WifiDetail>();
+		
+		WifiDetail wifi = null;
+		
+		String wifiSql = "select * from tb_wifiInfo where locationId = "+locationId;
+		
+		if(null != connection){
+			
+			try {
+				Statement statement = connection.createStatement();
+				
+				ResultSet wifiSet = statement.executeQuery(wifiSql);
+				
+				while (wifiSet.next()) {
+
+					wifi  = new WifiDetail();
+					
+					wifi.setLocationId(locationId);
+					wifi.setBSSID(wifiSet.getString("BSSID"));
+					wifi.setRSS(wifiSet.getInt("RSS"));
+					wifi.setSSID(wifiSet.getString("SSID"));
+					wifi.setWifiId(wifiSet.getLong("wifiId"));
+					
+					wifis.add(wifi);
+					
+				}
+				
+				
+				return wifis;
+				
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
+		return null;
+		
+	}
+	
+	
+	
 	
 	public void closeConnection(){
 		

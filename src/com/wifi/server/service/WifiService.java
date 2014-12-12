@@ -23,6 +23,7 @@ public class WifiService {
 				dbo.saveWifiInfo(ld.getWifiDetails(),connection,ldId);
 			}
 			
+			dbo.closeConnection();
 			return ldId;
 		}
 		

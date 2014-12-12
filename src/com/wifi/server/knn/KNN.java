@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+import com.wifi.server.model.LocationDetails;
+import com.wifi.server.model.WifiDetail;
+
 public class KNN {
     // �������ȼ����еıȽϺ���,����Խ��,���ȼ�Խ��
     private final Comparator<KNNNode> comparator = new Comparator<KNNNode>() {
@@ -60,6 +63,26 @@ public class KNN {
         return distance;
     }
     
+    
+    public double wifiCalDistance(List<WifiDetail> d1,List<WifiDetail> d2){
+    	double distance = 0.00;
+    	int wifiLength = 0;
+    	int d1Length = d1.size();
+    	int d2Length = d2.size();
+    	if(d1Length >= 5 && d2Length >= 5){
+    		
+    		wifiLength = 5;
+    	}else{
+			wifiLength = d1Length < d2Length ? d1Length:d2Length;
+		}
+    	
+    	for(int i = 0;i < wifiLength;i++){
+    		distance += ((double)d1.get(i).getRSS() - (double)d2.get(i).getRSS())*((double)d1.get(i).getRSS() - (double)d2.get(i).getRSS());
+    	}
+    	
+    	return distance;
+    }
+    
     /**
      * ִ��KNN�㷨����ȡ����Ԫ������
      * 
@@ -92,6 +115,45 @@ public class KNN {
         }
         return getMostClass(pq);
     }
+    
+    
+    
+    /**
+     * 适合wifi数据定位的算法，将原knn算法修改了一下
+     * @param ld
+     * @param wifi
+     * @param k
+     * @return
+     */
+    public String wifiKnn(List<LocationDetails> ld,List<WifiDetail> wifi,int k){
+    	
+    	PriorityQueue<KNNNode> pq = new PriorityQueue<KNNNode>(k, comparator);
+    	
+    	List<Integer> randNum = getRandKNum(k, ld.size());
+    	
+    	for(int i = 0;i < k;i++){
+    		int index = randNum.get(i);
+    		List<WifiDetail> currData = ld.get(index).getWifiDetails();
+    		String c = ""+ld.get(index).getLocationId();
+    		KNNNode node = new KNNNode(index, wifiCalDistance(wifi, currData), c);
+    		pq.add(node);
+    	}
+    	for(int i = 0;i < ld.size();i++){
+    		List<WifiDetail> t = ld.get(i).getWifiDetails();
+    		double distance = wifiCalDistance(wifi, t);
+    		KNNNode top = pq.peek();
+    		
+    		if(top.getDistance() > distance){
+    			pq.remove();
+    			pq.add(new KNNNode(i, distance, ""+ld.get(i).getLocationId()));
+    		}
+    	}
+    	
+    	
+    	return getMostClass(pq);
+    	
+    }
+    
     
     /**
      * ��ȡ��õ���k�������Ԫ��Ķ�����

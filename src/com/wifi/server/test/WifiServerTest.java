@@ -18,7 +18,6 @@ import javax.servlet.http.HttpServletResponse;
 
 
 import com.alibaba.fastjson.JSONObject;
-import com.sun.corba.se.spi.orbutil.fsm.Guard.Result;
 import com.wifi.server.dao.DataBaseOption;
 import com.wifi.server.model.LocationDetails;
 import com.wifi.server.service.WifiService;
